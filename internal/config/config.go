@@ -21,7 +21,7 @@ type Configuration struct {
 	Account      string `mapstructure:"account" validate:"required"`
 	Database     string `mapstructure:"database" validate:"required"`
 	Warehouse    string `mapstructure:"warehouse" validate:"required"`
-	Schema       string `mapstructure:"schema"` // Required?
+	Schema       string `mapstructure:"schema"`
 	OktaOrg      string `mapstructure:"okta-org" validate:"required,url"`
 	ODBCini      string `mapstructure:"odbc-ini" validate:"required"`
 	ODBCDriver   string `mapstructure:"odbc-driver" validate:"required"`

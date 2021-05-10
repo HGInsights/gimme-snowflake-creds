@@ -22,6 +22,7 @@ func WriteODBCConfig(p config.Configuration, t *config.Credentials) error {
 	odbc.Section(p.Profile).Key("server").SetValue(serverURL)
 	odbc.Section(p.Profile).Key("uid").SetValue(p.Username)
 	odbc.Section(p.Profile).Key("database").SetValue(p.Database)
+	odbc.Section(p.Profile).Key("schema").SetValue(p.Schema)
 	odbc.Section(p.Profile).Key("warehouse").SetValue(p.Warehouse)
 	odbc.Section(p.Profile).Key("role").SetValue(p.Role)
 	odbc.Section(p.Profile).Key("authenticator").SetValue("oauth")

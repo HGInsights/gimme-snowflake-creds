@@ -70,7 +70,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&p.Account, "account", "a", "", "Snowflake account, like: xy12345.us-east-1")
 	rootCmd.Flags().StringVarP(&p.Database, "database", "d", "", "Snowflake database")
 	rootCmd.Flags().StringVarP(&p.Warehouse, "warehouse", "w", "", "Snowflake warehouse")
-	rootCmd.Flags().StringVarP(&p.Schema, "schema", "x", "", "Snowflake schema")
+	rootCmd.Flags().StringVarP(&p.Schema, "schema", "x", "PUBLIC", "Snowflake schema")
 	rootCmd.Flags().StringVarP(&p.OktaOrg, "okta-org", "o", "", "like: https://funtimes.oktapreview.com")
 	rootCmd.Flags().StringVarP(&p.ODBCini, "odbc-ini", "n", "/etc/odbc.ini", "Location of odbc.ini")
 	rootCmd.Flags().StringVarP(&p.ODBCDriver, "odbc-driver", "v", "", "Location of ODBC driver")

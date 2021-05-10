@@ -19,6 +19,9 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Check formatting
+      run: if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then exit 1; fi
+
     - name: Release
       uses: goreleaser/goreleaser-action@v2
       with:
