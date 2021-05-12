@@ -165,6 +165,7 @@ func primaryAuth(p config.Configuration) (*authnResponse, error) {
 
 	resp, err := c.Do(req)
 	if err != nil {
+		fmt.Println(string(p.ColorFailure), "Unknown error: is the network up?")
 		p.Logger.Debug("HTTP request failed", "error", err)
 		os.Exit(0)
 	}
@@ -332,7 +333,11 @@ func oauthToken(p config.Configuration, auth *authorizeResponse) (*tokenResponse
 		p.Logger.Debug("HTTP request failed", "error", err, "response", resp)
 		os.Exit(0)
 	}
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusBadRequest {
+		fmt.Println(string(p.ColorFailure), "Bad request: maybe check Okta privileges?")
+		p.Logger.Debug("OAuth: HTTP 400", "error", err, "response", resp)
+		os.Exit(0)
+	} else if resp.StatusCode != http.StatusOK {
 		p.Logger.Debug("OAuth: HTTP is not OK", "status", resp.StatusCode, "error", err)
 		os.Exit(0)
 	}

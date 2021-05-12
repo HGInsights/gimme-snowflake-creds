@@ -45,7 +45,7 @@ dev:
   client-id: <okta_app_client_id>
   issuer-url: <okta_app_issuer_url>
   redirect-uri: <okta_app_redirect-uri>
-  odbc-ini: <path_to_odbc_ini>       # Must be absolute path
+  odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
   odbc-driver: <path_to_odbc_driver> # Must be absolute path
   
 prod: 
@@ -58,7 +58,7 @@ prod:
   client-id: <okta_app_client_id>
   issuer-url: <okta_app_issuer_url>
   redirect-uri: <okta_app_redirect-uri>
-  odbc-ini: <path_to_odbc_ini>       # Must be absolute path
+  odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
   odbc-driver: <path_to_odbc_driver> # Must be absolute path
 ```
 

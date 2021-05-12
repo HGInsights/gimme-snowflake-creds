@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/HGInsights/gimme-snowflake-creds/internal/config"
 	"github.com/spf13/viper"
@@ -9,13 +10,20 @@ import (
 )
 
 func WriteODBCConfig(p config.Configuration, t *config.Credentials) error {
+	var odbcConfigFile = p.ODBCPath + "/odbc.ini"
 	var serverURL = p.Account + ".snowflakecomputing.com"
 
-	odbc, err := ini.Load(p.ODBCini)
+	// Ensure ODBC path defined by user exists
+	if _, err := os.Stat(p.ODBCPath); os.IsNotExist(err) {
+		p.Logger.Debug("Couldn't find existing ODBC path, creating...", "error", err)
+		os.Mkdir(p.ODBCPath, os.ModePerm)
+	}
+
+	odbc, err := ini.Load(odbcConfigFile)
 	if err != nil {
-		fmt.Println(string(p.ColorSuccess), "ODBC: No existing configuration found, is a driver installed?")
-		p.Logger.Debug("Couldn't read ODBC config", "error", err)
-		return err
+		fmt.Println(string(p.ColorSuccess), "ODBC: No existing configuration found, creating file...")
+		p.Logger.Debug("Couldn't read existing ODBC config", "error", err)
+		odbc = ini.Empty()
 	}
 
 	odbc.Section(p.Profile).Key("Driver").SetValue(p.ODBCDriver)
@@ -28,23 +36,30 @@ func WriteODBCConfig(p config.Configuration, t *config.Credentials) error {
 	odbc.Section(p.Profile).Key("authenticator").SetValue("oauth")
 	odbc.Section(p.Profile).Key("token").SetValue(t.AccessToken)
 
-	err = odbc.SaveTo(p.ODBCini)
+	err = odbc.SaveTo(odbcConfigFile)
 	if err != nil {
 		fmt.Println(string(p.ColorFailure), "ODBC: Couldn't write config!")
 		p.Logger.Debug("Couldn't write ODBC config", "error", err)
 		return err
 	}
 
-	fmt.Println(string(p.ColorSuccess), "ODBC: Configuration written to:", p.ODBCini)
+	fmt.Println(string(p.ColorSuccess), "ODBC: Configuration written to:", odbcConfigFile)
 
 	return nil
 }
 
 func WriteDBTConfig(p config.Configuration, t *config.Credentials) error {
+	var dbtConfigPath = p.HomeDir + "/.dbt"
 	var dbtConfigFile = p.HomeDir + "/.dbt/profiles.yml"
 
 	var dbt = viper.New()
 	dbt.SetConfigFile(dbtConfigFile)
+
+	// Ensure DBT configuration directory exists
+	if _, err := os.Stat(dbtConfigPath); os.IsNotExist(err) {
+		p.Logger.Debug("Couldn't find existing DBT configuration directory, creating...", "error", err)
+		os.Mkdir(dbtConfigPath, os.ModePerm)
+	}
 
 	profile := map[string]interface{}{
 		string(p.Profile): map[string]interface{}{
@@ -68,7 +83,7 @@ func WriteDBTConfig(p config.Configuration, t *config.Credentials) error {
 	err := dbt.ReadInConfig()
 	if err != nil {
 		fmt.Println(string(p.ColorSuccess), "DBT: No existing configuration found, creating file...")
-		p.Logger.Debug("Couldn't read DBT config", "error", err)
+		p.Logger.Debug("Couldn't read existing DBT config", "error", err)
 	}
 	err = dbt.WriteConfig()
 	if err != nil {
