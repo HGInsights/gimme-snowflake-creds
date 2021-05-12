@@ -72,7 +72,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&p.Warehouse, "warehouse", "w", "", "Snowflake warehouse")
 	rootCmd.Flags().StringVarP(&p.Schema, "schema", "x", "PUBLIC", "Snowflake schema")
 	rootCmd.Flags().StringVarP(&p.OktaOrg, "okta-org", "o", "", "like: https://funtimes.oktapreview.com")
-	rootCmd.Flags().StringVarP(&p.ODBCini, "odbc-ini", "n", "/etc/odbc.ini", "Location of odbc.ini")
+	rootCmd.Flags().StringVarP(&p.ODBCPath, "odbc-path", "n", "/etc/", "Path containing odbc.ini")
 	rootCmd.Flags().StringVarP(&p.ODBCDriver, "odbc-driver", "v", "", "Location of ODBC driver")
 	rootCmd.Flags().StringVarP(&p.ClientID, "client-id", "c", "", "OIDC Client ID of Okta application")
 	rootCmd.Flags().StringVarP(&p.Role, "role", "s", "", "space separated list of Snowflake role names")

@@ -23,7 +23,7 @@ type Configuration struct {
 	Warehouse    string `mapstructure:"warehouse" validate:"required"`
 	Schema       string `mapstructure:"schema"`
 	OktaOrg      string `mapstructure:"okta-org" validate:"required,url"`
-	ODBCini      string `mapstructure:"odbc-ini" validate:"required"`
+	ODBCPath     string `mapstructure:"odbc-path" validate:"required"`
 	ODBCDriver   string `mapstructure:"odbc-driver" validate:"required"`
 	ClientID     string `mapstructure:"client-id" validate:"required"`
 	Role         string `mapstructure:"role" validate:"required"`
