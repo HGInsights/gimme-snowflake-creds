@@ -29,12 +29,17 @@ func WriteODBCConfig(p config.Configuration, t *config.Credentials) error {
 	odbc.Section(p.Profile).Key("Driver").SetValue(p.ODBCDriver)
 	odbc.Section(p.Profile).Key("server").SetValue(serverURL)
 	odbc.Section(p.Profile).Key("uid").SetValue(p.Username)
+	odbc.Section(p.Profile).Key("role").SetValue(p.Role)
 	odbc.Section(p.Profile).Key("database").SetValue(p.Database)
 	odbc.Section(p.Profile).Key("schema").SetValue(p.Schema)
 	odbc.Section(p.Profile).Key("warehouse").SetValue(p.Warehouse)
-	odbc.Section(p.Profile).Key("role").SetValue(p.Role)
-	odbc.Section(p.Profile).Key("authenticator").SetValue("oauth")
-	odbc.Section(p.Profile).Key("token").SetValue(t.AccessToken)
+
+	if p.OAuth {
+		odbc.Section(p.Profile).Key("authenticator").SetValue("oauth")
+		odbc.Section(p.Profile).Key("token").SetValue(t.AccessToken)
+	} else {
+		odbc.Section(p.Profile).Key("authenticator").SetValue("externalbrowser")
+	}
 
 	err = odbc.SaveTo(odbcConfigFile)
 	if err != nil {
@@ -54,6 +59,7 @@ func WriteDBTConfig(p config.Configuration, t *config.Credentials) error {
 
 	var dbt = viper.New()
 	dbt.SetConfigFile(dbtConfigFile)
+	dbt.Set("default.target", "dev")
 
 	// Ensure DBT configuration directory exists
 	if _, err := os.Stat(dbtConfigPath); os.IsNotExist(err) {
@@ -61,24 +67,42 @@ func WriteDBTConfig(p config.Configuration, t *config.Credentials) error {
 		os.Mkdir(dbtConfigPath, os.ModePerm)
 	}
 
-	profile := map[string]interface{}{
-		string(p.Profile): map[string]interface{}{
-			"type":                      "snowflake",
-			"account":                   p.Account,
-			"user":                      p.Username,
-			"authenticator":             "oauth",
-			"token":                     t.AccessToken,
-			"role":                      p.Role,
-			"database":                  p.Database,
-			"warehouse":                 p.Warehouse,
-			"schema":                    p.Schema,
-			"threads":                   10,
-			"client_session_keep_alive": false,
-		},
-	}
+	if p.OAuth {
+		profile := map[string]interface{}{
+			string(p.Profile): map[string]interface{}{
+				"type":                      "snowflake",
+				"account":                   p.Account,
+				"user":                      p.Username,
+				"authenticator":             "oauth",
+				"token":                     t.AccessToken,
+				"role":                      p.Role,
+				"database":                  p.Database,
+				"warehouse":                 p.Warehouse,
+				"schema":                    p.Schema,
+				"threads":                   10,
+				"client_session_keep_alive": false,
+			},
+		}
 
-	dbt.Set("default.target", "dev")
-	dbt.Set("default.outputs", profile)
+		dbt.Set("default.outputs", profile)
+	} else {
+		profile := map[string]interface{}{
+			string(p.Profile): map[string]interface{}{
+				"type":                      "snowflake",
+				"account":                   p.Account,
+				"user":                      p.Username,
+				"authenticator":             "externalbrowser",
+				"role":                      p.Role,
+				"database":                  p.Database,
+				"warehouse":                 p.Warehouse,
+				"schema":                    p.Schema,
+				"threads":                   10,
+				"client_session_keep_alive": false,
+			},
+		}
+
+		dbt.Set("default.outputs", profile)
+	}
 
 	err := dbt.ReadInConfig()
 	if err != nil {
