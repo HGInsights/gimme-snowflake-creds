@@ -12,6 +12,13 @@ import (
 var (
 	validate *validator.Validate
 
+	oauthParams = []string{
+		"okta-org",
+		"client-id",
+		"issuer-url",
+		"redirect-uri",
+	}
+
 	colorGreen = "\033[32m"
 	colorRed   = "\033[31m"
 )
@@ -22,6 +29,7 @@ type Configuration struct {
 	Database     string `mapstructure:"database" validate:"required"`
 	Warehouse    string `mapstructure:"warehouse" validate:"required"`
 	Schema       string `mapstructure:"schema"`
+	OAuth        bool   `mapstructure:"oauth"`
 	OktaOrg      string `mapstructure:"okta-org" validate:"required,url"`
 	ODBCPath     string `mapstructure:"odbc-path" validate:"required"`
 	ODBCDriver   string `mapstructure:"odbc-driver" validate:"required"`
@@ -64,11 +72,25 @@ func ValidateConfiguration(p *Configuration) error {
 	err := validate.Struct(p)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			fmt.Println(string(p.ColorFailure), "Parameter", err.Field(), "is required")
+			if !p.OAuth && contains(oauthParams, err.Field()) {
+				return nil
+			} else {
+				fmt.Println(string(p.ColorFailure), "Parameter", err.Field(), "is required")
+			}
 		}
 
 		return err
 	}
 
 	return nil
+}
+
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }

@@ -57,83 +57,85 @@ type tokenResponse struct {
 func Auth(p config.Configuration) (*config.Credentials, error) {
 	c := new(config.Credentials)
 
-	// Prompt for Okta password
-	p, err := passwordPrompt(p)
-	if err != nil {
-		p.Logger.Debug("Unable to return password prompt input", "error", err)
-		os.Exit(0)
-	}
-
-	// Perform primary, initial authentication
-	authn, err := primaryAuth(p)
-	if err != nil {
-		p.Logger.Debug("Unable to return primary authentication response", "error", err)
-		os.Exit(0)
-	}
-
-	if authn.Status == "SUCCESS" {
-		// Retrieve OAuth token
-		token, err := oauthToken(p, nil)
+	if p.OAuth {
+		// Prompt for Okta password
+		p, err := passwordPrompt(p)
 		if err != nil {
-			p.Logger.Debug("Unable to return OAuth token", "error", err)
+			p.Logger.Debug("Unable to return password prompt input", "error", err)
 			os.Exit(0)
 		}
 
-		c.ExpiresIn = token.ExpiresIn
-		c.AccessToken = token.AccessToken
-
-		return c, nil
-	} else if authn.Status == "MFA_REQUIRED" {
-		// Prompt for factor type
-		factor, err := factorSelect(p, authn)
+		// Perform primary, initial authentication
+		authn, err := primaryAuth(p)
 		if err != nil {
-			p.Logger.Debug("Unable to return factor selection", "error", err)
+			p.Logger.Debug("Unable to return primary authentication response", "error", err)
 			os.Exit(0)
 		}
 
-		if factor.FactorType != "token:software:totp" {
-			err := factorPush(p, authn, factor)
+		if authn.Status == "SUCCESS" {
+			// Retrieve OAuth token
+			token, err := oauthToken(p, nil)
 			if err != nil {
-				p.Logger.Debug("Unable to initiate factor push", "error", err)
+				p.Logger.Debug("Unable to return OAuth token", "error", err)
 				os.Exit(0)
 			}
-		}
 
-		// Prompt for factor challenge
-		challenge, err := factorChallenge(p)
-		if err != nil {
-			p.Logger.Debug("Unable to return factor challenge", "error", err)
+			c.ExpiresIn = token.ExpiresIn
+			c.AccessToken = token.AccessToken
+
+			return c, nil
+		} else if authn.Status == "MFA_REQUIRED" {
+			// Prompt for factor type
+			factor, err := factorSelect(p, authn)
+			if err != nil {
+				p.Logger.Debug("Unable to return factor selection", "error", err)
+				os.Exit(0)
+			}
+
+			if factor.FactorType != "token:software:totp" {
+				err := factorPush(p, authn, factor)
+				if err != nil {
+					p.Logger.Debug("Unable to initiate factor push", "error", err)
+					os.Exit(0)
+				}
+			}
+
+			// Prompt for factor challenge
+			challenge, err := factorChallenge(p)
+			if err != nil {
+				p.Logger.Debug("Unable to return factor challenge", "error", err)
+				os.Exit(0)
+			}
+
+			// Perform MFA verification
+			verify, err := verifyMFA(p, authn, factor, challenge)
+			if err != nil {
+				p.Logger.Debug("Unable to return MFA verifcation", "error", err)
+				os.Exit(0)
+			}
+
+			// Retrieve authorizataion code
+			auth, err := authCode(p, verify)
+			if err != nil {
+				p.Logger.Debug("Unable to return authorization code", "error", err)
+				os.Exit(0)
+			}
+
+			// Retrieve OAuth token
+			token, err := oauthToken(p, auth)
+			if err != nil {
+				p.Logger.Debug("Unable to return OAuth token", "error", err)
+				os.Exit(0)
+			}
+
+			c.ExpiresIn = token.ExpiresIn
+			c.AccessToken = token.AccessToken
+
+			return c, nil
+		} else {
+			p.Logger.Debug("Something went very wrong...")
 			os.Exit(0)
 		}
-
-		// Perform MFA verification
-		verify, err := verifyMFA(p, authn, factor, challenge)
-		if err != nil {
-			p.Logger.Debug("Unable to return MFA verifcation", "error", err)
-			os.Exit(0)
-		}
-
-		// Retrieve authorizataion code
-		auth, err := authCode(p, verify)
-		if err != nil {
-			p.Logger.Debug("Unable to return authorization code", "error", err)
-			os.Exit(0)
-		}
-
-		// Retrieve OAuth token
-		token, err := oauthToken(p, auth)
-		if err != nil {
-			p.Logger.Debug("Unable to return OAuth token", "error", err)
-			os.Exit(0)
-		}
-
-		c.ExpiresIn = token.ExpiresIn
-		c.AccessToken = token.AccessToken
-
-		return c, nil
-	} else {
-		p.Logger.Debug("Something went very wrong...")
-		os.Exit(0)
 	}
 
 	return c, nil
