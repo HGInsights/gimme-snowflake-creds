@@ -33,10 +33,9 @@ Move the gimme-snowflake-creds binary to one of the locations listed in the prev
 mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
 ```
 
-**[macOS only]** Add a Gatekeeper exception:
-```shell
-sudo spctl --add /usr/local/bin/gimme-snowflake-creds
-```
+## macOS only
+Appease Gatekeeper by going to **System Preferences** > **Security & Privacy** and clicking **Allow Anyway**:
+![](gatekeeper.png)
 
 ## Configuration
 `~/.okta_snowflake_login_config`
