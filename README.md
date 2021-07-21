@@ -34,7 +34,8 @@ mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
 ```
 
 ## macOS only
-Appease Gatekeeper by going to **System Preferences** > **Security & Privacy** and clicking **Allow Anyway**:
+1. Try to execute gimme-snowflake-creds
+1. Appease Gatekeeper by going to **System Preferences** > **Security & Privacy** and clicking **Allow Anyway**:
 ![](gatekeeper.png)
 
 ## Configuration
