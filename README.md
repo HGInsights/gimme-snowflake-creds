@@ -12,6 +12,7 @@ Inspired by [gimme-aws-creds](https://github.com/Nike-Inc/gimme-aws-creds).
 ## Prerequisites
 
 - [Okta / Snowflake OAuth integration](https://docs.snowflake.com/en/user-guide/oauth-okta.html#configure-okta-for-external-oauth)
+  - [Using ANY Role with External OAuth](https://docs.snowflake.com/en/user-guide/oauth-okta.html#using-any-role-with-external-oauth) **must be followed**
 - [Snowflake ODBC driver](https://docs.snowflake.com/en/user-guide/odbc.html)
 - [DBT](https://docs.getdbt.com/dbt-cli/installation/)
 
@@ -30,6 +31,11 @@ Move the gimme-snowflake-creds binary to one of the locations listed in the prev
 ```shell
 # Assumes you downloaded and extracted the binary in your `~/Downloads` directory
 mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
+```
+
+**[macOS only]** Add a Gatekeeper exception:
+```shell
+sudo spctl --add /usr/local/bin/gimme-snowflake-creds
 ```
 
 ## Configuration

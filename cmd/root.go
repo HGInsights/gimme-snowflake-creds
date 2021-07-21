@@ -76,7 +76,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&p.ODBCPath, "odbc-path", "n", "/etc", "Path containing odbc.ini")
 	rootCmd.Flags().StringVarP(&p.ODBCDriver, "odbc-driver", "v", "", "Location of ODBC driver")
 	rootCmd.Flags().StringVarP(&p.ClientID, "client-id", "c", "", "OIDC Client ID of Okta application")
-	rootCmd.Flags().StringVarP(&p.Role, "role", "s", "", "space separated list of Snowflake role names")
+	rootCmd.Flags().StringVarP(&p.Role, "role", "s", "", "Snowflake role name")
 	rootCmd.Flags().StringVarP(&p.IssuerURL, "issuer-url", "i", "", "issuer URL of Okta authorization server")
 	rootCmd.Flags().StringVarP(&p.RedirectURI, "redirect-uri", "r", "", "redirect URI of Okta application")
 	rootCmd.Flags().StringVarP(&p.Username, "username", "u", "", "username for Okta")

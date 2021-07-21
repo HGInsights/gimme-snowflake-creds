@@ -246,7 +246,7 @@ func authCode(p config.Configuration, verify *verifyResponse) (*authorizeRespons
 	uri := p.IssuerURL + "/v1/authorize"
 
 	r := new(authorizeResponse)
-	scope := "session:role:" + p.Role
+	scope := "session:role-any"
 
 	// PKCE code verifier and code challenge generation
 	v, err := verifier.CreateCodeVerifier()
@@ -302,7 +302,7 @@ func oauthToken(p config.Configuration, auth *authorizeResponse) (*tokenResponse
 	uri := p.IssuerURL + "/v1/token"
 
 	r := new(tokenResponse)
-	scope := "session:role:" + p.Role
+	scope := "session:role-any"
 
 	payload := url.Values{}
 
