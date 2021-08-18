@@ -29,6 +29,7 @@ type authnResponse struct {
 
 type factor struct {
 	FactorType string `json:"factorType"`
+	Provider   string `json:"provider"`
 	Links      struct {
 		Verify struct {
 			VerifyURL string `json:"href"`
@@ -38,6 +39,7 @@ type factor struct {
 
 type verifyResponse struct {
 	Status       string `json:"status"`
+	FactorResult string `json:"factorResult"`
 	ExpiresAt    string `json:"expiresAt"`
 	SessionToken string `json:"sessionToken"`
 }
@@ -92,16 +94,14 @@ func Auth(p config.Configuration) (*config.Credentials, error) {
 				os.Exit(0)
 			}
 
-			if factor.FactorType != "token:software:totp" {
-				err := factorPush(p, authn, factor)
-				if err != nil {
-					p.Logger.Debug("Unable to initiate factor push", "error", err)
-					os.Exit(0)
-				}
+			err = factorPush(p, authn, factor)
+			if err != nil {
+				p.Logger.Debug("Unable to initiate factor push", "error", err)
+				os.Exit(0)
 			}
 
 			// Prompt for factor challenge
-			challenge, err := factorChallenge(p)
+			challenge, err := factorChallenge(p, factor)
 			if err != nil {
 				p.Logger.Debug("Unable to return factor challenge", "error", err)
 				os.Exit(0)
@@ -109,7 +109,22 @@ func Auth(p config.Configuration) (*config.Credentials, error) {
 
 			// Perform MFA verification
 			verify, err := verifyMFA(p, authn, factor, challenge)
+			for verify.FactorResult == "WAITING" {
+				p.Logger.Debug("Checking MFA verification...")
+				time.Sleep(1 * time.Second)
+				verify, err = verifyMFA(p, authn, factor, challenge)
+			}
+			if verify.FactorResult == "REJECTED" {
+				fmt.Println(string(p.ColorFailure), "MFA challenge rejected!")
+				os.Exit(0)
+			} else if verify.FactorResult == "TIMEOUT" {
+				fmt.Println(string(p.ColorSuccess), "MFA challenge timed out!")
+				os.Exit(0)
+			} else if verify.Status == "SUCCESS" {
+				fmt.Println(string(p.ColorSuccess), "MFA verified!")
+			}
 			if err != nil {
+				fmt.Println(string(p.ColorFailure), "MFA verification failed!")
 				p.Logger.Debug("Unable to return MFA verifcation", "error", err)
 				os.Exit(0)
 			}
@@ -388,7 +403,9 @@ func factorPush(p config.Configuration, authn *authnResponse, factor *factor) er
 		os.Exit(0)
 	}
 
-	fmt.Println(string(p.ColorSuccess), "Code sent!")
+	if typeFactor("challenge", factor.FactorType) {
+		fmt.Println(string(p.ColorSuccess), "MFA challenge sent!")
+	}
 
 	return nil
 }
@@ -426,7 +443,7 @@ func factorSelect(p config.Configuration, resp *authnResponse) (*factor, error) 
 	var r = new(factor)
 
 	for _, f := range resp.Embedded.Factors {
-		factors = append(factors, f.FactorType)
+		factors = append(factors, f.FactorType+" ("+f.Provider+")")
 	}
 
 	prompt := promptui.Select{
@@ -441,7 +458,7 @@ func factorSelect(p config.Configuration, resp *authnResponse) (*factor, error) 
 	}
 
 	for _, f := range resp.Embedded.Factors {
-		if f.FactorType == result {
+		if f.FactorType+" ("+f.Provider+")" == result {
 			r = &f
 			return r, nil
 		}
@@ -450,7 +467,11 @@ func factorSelect(p config.Configuration, resp *authnResponse) (*factor, error) 
 	return nil, nil
 }
 
-func factorChallenge(p config.Configuration) (string, error) {
+func factorChallenge(p config.Configuration, factor *factor) (string, error) {
+	if typeFactor("activate", factor.FactorType) {
+		return "", nil
+	}
+
 	validate := func(input string) error {
 		if len(input) == 0 {
 			return errors.New("MFA code must not be empty")
@@ -471,4 +492,25 @@ func factorChallenge(p config.Configuration) (string, error) {
 	}
 
 	return result, nil
+}
+
+func typeFactor(factorType string, factor string) bool {
+	activateFactors := []string{"push"}
+	challengeFactors := []string{"push", "sms"}
+
+	if factorType == "activate" {
+		for _, item := range activateFactors {
+			if item == factor {
+				return true
+			}
+		}
+	} else if factorType == "challenge" {
+		for _, item := range challengeFactors {
+			if item == factor {
+				return true
+			}
+		}
+	}
+
+	return false
 }
