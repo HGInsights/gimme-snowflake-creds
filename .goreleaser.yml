@@ -5,3 +5,14 @@ builds:
   goarch:
   - amd64
   - arm64
+
+brews:
+- homepage: 'https://github.com/HGInsights/gimme-snowflake-creds'
+  description: 'Okta > OAuth > Snowflake > Creds'
+  folder: formula
+  commit_author:
+    name: Raymond Douglas
+    email: raymond.douglas@hginsights.com
+  tap:
+    owner: HGInsights
+    name: gimme-snowflake-creds
