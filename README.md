@@ -17,9 +17,21 @@ Inspired by [gimme-aws-creds](https://github.com/Nike-Inc/gimme-aws-creds).
 - [DBT](https://docs.getdbt.com/dbt-cli/installation/)
 
 ## Installation
+### Homebrew
+Tap repository:
+```shell
+$ brew tap hginsights/gimme-snowflake-creds
+```
+
+Install:
+```shell
+$ brew install gimme-snowflake-creds
+```
+
+### Manual
 Download a [release](https://github.com/HGInsights/gimme-snowflake-creds/releases) and extract the contents:
 ```shell
-tar -xvf gimme-snowflake-creds_<version>_darwin_arm64.tar.gz
+tar -xvf gimme-snowflake-creds_<version>_linux_amd64.tar.gz
 ```
 
 Print a colon-separated list of locations in your `PATH`:
@@ -33,11 +45,6 @@ Move the gimme-snowflake-creds binary to one of the locations listed in the prev
 mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
 ```
 
-## macOS only
-1. Try to execute gimme-snowflake-creds
-1. Appease Gatekeeper by going to **System Preferences** > **Security & Privacy** and clicking **Allow Anyway**:
-![](gatekeeper.png)
-
 ## Configuration
 `~/.okta_snowflake_login_config`
 ```yaml
@@ -45,24 +52,26 @@ dev:
   account: <snowflake_account_id>
   database: <snowflake_database_name>
   warehouse: <snowflake_warehouse_name>
-  role: <snowflake_role>
+  schema: <snowflake_schema_name>
   username: <okta_username>
-  oauth: false
+  role: <snowflake_role>
   odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
   odbc-driver: <path_to_odbc_driver> # Must be absolute path
+  oauth: false
   
 prod: 
   account: <snowflake_account_id>
   database: <snowflake_database_name>
   warehouse: <snowflake_warehouse_name>
-  role: <snowflake_role>
+  schema: <snowflake_schema_name>
   username: <okta_username>
+  role: <snowflake_role>
+  odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
+  odbc-driver: <path_to_odbc_driver> # Must be absolute path
   okta-org: <okta_org_url>
   client-id: <okta_app_client_id>
   issuer-url: <okta_app_issuer_url>
   redirect-uri: <okta_app_redirect-uri>
-  odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
-  odbc-driver: <path_to_odbc_driver> # Must be absolute path
 ```
 
 ## Usage
@@ -70,8 +79,9 @@ OAuth-enabled profile:
 ```shell
 $ gimme-snowflake-creds -p prod
 Okta password for gimme-user@example.com: ************************
-✔ token:software:totp
+✔ token:software:totp (GOOGLE)
 MFA code: ******
+ MFA verified!
  ODBC: Configuration written to: /Users/gimme.user/Library/ODBC/odbc.ini
  DBT: Configuration written to: /Users/gimme.user/.dbt/profiles.yml
 ```
