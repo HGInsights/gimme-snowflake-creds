@@ -7,12 +7,13 @@ builds:
   - arm64
 
 brews:
-- homepage: 'https://github.com/HGInsights/gimme-snowflake-creds'
+- homepage: 'https://github.com/hginsights/gimme-snowflake-creds'
   description: 'Okta > OAuth > Snowflake > Creds'
-  folder: formula
+  folder: Formula
   commit_author:
     name: Raymond Douglas
     email: raymond.douglas@hginsights.com
   tap:
-    owner: HGInsights
-    name: gimme-snowflake-creds
+    owner: hginsights
+    name: homebrew-tap
+    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
