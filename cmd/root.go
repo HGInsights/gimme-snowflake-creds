@@ -37,6 +37,14 @@ var (
 				p.Logger.Debug("Unable to initiate the authentication flow", err)
 			}
 
+			// Write generic configuration
+			if p.Generic {
+				err = generator.WriteGenericCredentials(p, token)
+				if err != nil {
+					p.Logger.Debug("Unable to write generic configuration file", err)
+				}
+			}
+
 			// Write ODBC configuration
 			err = generator.WriteODBCConfig(p, token)
 			if err != nil {
@@ -66,12 +74,13 @@ func Execute() {
 
 func init() {
 	// Set flags
-	rootCmd.Flags().StringVarP(&p.Profile, "profile", "p", "dev", "profile selection")
+	rootCmd.Flags().StringVarP(&p.Profile, "profile", "p", "", "profile selection")
 	rootCmd.Flags().StringVarP(&p.Account, "account", "a", "", "Snowflake account, like: xy12345.us-east-1")
 	rootCmd.Flags().StringVarP(&p.Database, "database", "d", "", "Snowflake database")
 	rootCmd.Flags().StringVarP(&p.Warehouse, "warehouse", "w", "", "Snowflake warehouse")
 	rootCmd.Flags().StringVarP(&p.Schema, "schema", "x", "PUBLIC", "Snowflake schema")
 	rootCmd.Flags().BoolVarP(&p.OAuth, "oauth", "", true, "enable/disable credential retrieval")
+	rootCmd.Flags().BoolVarP(&p.Generic, "generic", "", false, "enable/disable generic credential setup")
 	rootCmd.Flags().StringVarP(&p.OktaOrg, "okta-org", "o", "", "like: https://funtimes.oktapreview.com")
 	rootCmd.Flags().StringVarP(&p.ODBCPath, "odbc-path", "n", "/etc", "Path containing odbc.ini")
 	rootCmd.Flags().StringVarP(&p.ODBCDriver, "odbc-driver", "v", "", "Location of ODBC driver")
@@ -114,7 +123,19 @@ func initConfig(cmd *cobra.Command) error {
 		p.Logger.Debug(v.ConfigFileUsed())
 	}
 
-	// Unmarshal configuration into configuration struct
+	// Unmarshal default profile into configuration struct
+	err = v.UnmarshalKey("default", &p.Default)
+	if err != nil {
+		p.Logger.Error("error", err)
+		os.Exit(0)
+	}
+
+	// Set profile to default profile if no profile argument is passed
+	if p.Profile == "" {
+		p.Profile = p.Default
+	}
+
+	// Unmarshal profile configuration into configuration struct
 	err = v.UnmarshalKey(p.Profile, &p)
 	if err != nil {
 		p.Logger.Error("error", err)

@@ -25,11 +25,13 @@ var (
 
 type Configuration struct {
 	Profile      string
+	Default      string `mapstructure:"default"`
 	Account      string `mapstructure:"account" validate:"required"`
 	Database     string `mapstructure:"database" validate:"required"`
 	Warehouse    string `mapstructure:"warehouse" validate:"required"`
 	Schema       string `mapstructure:"schema"`
 	OAuth        bool   `mapstructure:"oauth"`
+	Generic      bool   `mapstructure:"generic"`
 	OktaOrg      string `mapstructure:"okta-org" validate:"required,url"`
 	ODBCPath     string `mapstructure:"odbc-path" validate:"required"`
 	ODBCDriver   string `mapstructure:"odbc-driver" validate:"required"`

@@ -20,7 +20,7 @@ Inspired by [gimme-aws-creds](https://github.com/Nike-Inc/gimme-aws-creds).
 ### Homebrew
 Tap repository:
 ```shell
-$ brew tap hginsights/gimme-snowflake-creds
+$ brew tap hginsights/tap
 ```
 
 Install:
@@ -48,6 +48,8 @@ mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
 ## Configuration
 `~/.okta_snowflake_login_config`
 ```yaml
+default: prod # Applies if no profile argument is passed
+
 dev: 
   account: <snowflake_account_id>
   database: <snowflake_database_name>
@@ -59,7 +61,7 @@ dev:
   odbc-driver: <path_to_odbc_driver> # Must be absolute path
   oauth: false
   
-prod: 
+prod:
   account: <snowflake_account_id>
   database: <snowflake_database_name>
   warehouse: <snowflake_warehouse_name>
@@ -72,6 +74,7 @@ prod:
   client-id: <okta_app_client_id>
   issuer-url: <okta_app_issuer_url>
   redirect-uri: <okta_app_redirect-uri>
+  generic: true # Additionally places generic `.env`-style credentials in `~/.gsc/`
 ```
 
 ## Usage
