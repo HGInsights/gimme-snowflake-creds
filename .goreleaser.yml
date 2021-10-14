@@ -18,4 +18,3 @@ brews:
     name: homebrew-tap
     token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
   download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-  custom_require: "../custom_download_strategy.rb"
