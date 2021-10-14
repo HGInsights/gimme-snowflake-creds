@@ -17,3 +17,4 @@ brews:
     owner: hginsights
     name: homebrew-tap
     token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    download_strategy: GitDownloadStrategy
