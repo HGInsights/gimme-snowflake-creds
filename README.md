@@ -28,6 +28,17 @@ Install:
 $ brew install gimme-snowflake-creds
 ```
 
+### Docker
+Add the following to your `~/.bashrc` or equivalent:
+```shell
+alias gimme-snowflake-creds="docker run -it --rm \
+      -v ~/.okta_snowflake_login_config:/root/.okta_snowflake_login_config \
+      -v ~/.dbt/profiles.yml:/root/.dbt/profiles.yml \
+      -v ~/Library/ODBC:/root/Library/ODBC \
+      -v ~/.gsc:/root/.gsc \
+      hgdata1/gimme-snowflake-creds"
+```
+
 ### Manual
 Download a [release](https://github.com/HGInsights/gimme-snowflake-creds/releases) and extract the contents:
 ```shell
