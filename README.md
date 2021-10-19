@@ -17,17 +17,6 @@ Inspired by [gimme-aws-creds](https://github.com/Nike-Inc/gimme-aws-creds).
 - [DBT](https://docs.getdbt.com/dbt-cli/installation/)
 
 ## Installation
-### Homebrew
-Tap repository:
-```shell
-$ brew tap hginsights/tap
-```
-
-Install:
-```shell
-$ brew install gimme-snowflake-creds
-```
-
 ### Docker
 Add the following to your `~/.bashrc` or equivalent:
 ```shell
