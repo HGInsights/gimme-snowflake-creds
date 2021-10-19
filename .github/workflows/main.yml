@@ -69,6 +69,8 @@ jobs:
         docker build \
           -t hgdata1/gimme-snowflake-creds:latest \
           -t hgdata1/gimme-snowflake-creds:${{ steps.vars.outputs.tag}} \
+          --cache-from hgdata1/gimme-snowflake-creds:latest \
+          --build-arg BUILDKIT_INLINE_CACHE=1 \
           .
 
     - name: Push
