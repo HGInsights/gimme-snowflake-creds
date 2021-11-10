@@ -36,13 +36,14 @@ func WriteGenericCredentials(c config.Configuration, t *config.Credentials) erro
 		return err
 	}
 
-	fmt.Println(string(c.ColorSuccess), "Generic: Configuration written to:", genericConfigFile)
+	fmt.Println(string(c.ColorSuccess), "Generic: Profile", c.ProfileName, "written to:", genericConfigFile)
 
 	return nil
 }
 
 func WriteODBCConfig(c config.Configuration, t *config.Credentials) error {
 	var odbcConfigFile = c.Profile.ODBCPath + "/odbc.ini"
+	var odbcInstConfigFile = c.Profile.ODBCPath + "/odbcinst.ini"
 	var serverURL = c.Profile.Account + ".snowflakecomputing.com"
 
 	// Ensure ODBC path defined by user exists
@@ -51,17 +52,14 @@ func WriteODBCConfig(c config.Configuration, t *config.Credentials) error {
 		os.Mkdir(c.Profile.ODBCPath, os.ModePerm)
 	}
 
+	// Create profile DSN
 	odbc, err := ini.Load(odbcConfigFile)
 	if err != nil {
-		fmt.Println(string(c.ColorSuccess), "ODBC: No existing configuration found, creating file...")
-		c.Logger.Debug("Couldn't read existing ODBC config", "error", err)
+		fmt.Println(string(c.ColorSuccess), "ODBC: No existing `odbc.ini`, creating file...")
+		c.Logger.Debug("Couldn't read existing `odbc.ini`", "error", err)
 		odbc = ini.Empty()
 	}
 
-	// Create driver alias
-	odbc.Section(c.ODBCDriverName).Key("Driver").SetValue(c.ODBCDriverPath)
-
-	// Create profile DSN
 	odbc.Section(c.ProfileName).Key("Driver").SetValue(c.ODBCDriverName)
 	odbc.Section(c.ProfileName).Key("server").SetValue(serverURL)
 	odbc.Section(c.ProfileName).Key("uid").SetValue(c.Profile.Username)
@@ -79,12 +77,29 @@ func WriteODBCConfig(c config.Configuration, t *config.Credentials) error {
 
 	err = odbc.SaveTo(odbcConfigFile)
 	if err != nil {
-		fmt.Println(string(c.ColorFailure), "ODBC: Couldn't write config!")
-		c.Logger.Debug("Couldn't write ODBC config", "error", err)
+		fmt.Println(string(c.ColorFailure), "ODBC: Couldn't write `odbc.ini`!")
+		c.Logger.Debug("Couldn't write `odbc.ini`", "error", err)
 		return err
 	}
 
-	fmt.Println(string(c.ColorSuccess), "ODBC: Configuration written to:", odbcConfigFile)
+	// Create driver alias
+	odbcinst, err := ini.Load(odbcInstConfigFile)
+	if err != nil {
+		fmt.Println(string(c.ColorSuccess), "ODBC: No existing `odbcinst.ini`, creating file...")
+		c.Logger.Debug("Couldn't read existing `odbcinst.ini`", "error", err)
+		odbcinst = ini.Empty()
+	}
+
+	odbcinst.Section(c.ODBCDriverName).Key("Driver").SetValue(c.ODBCDriverPath)
+
+	err = odbcinst.SaveTo(odbcInstConfigFile)
+	if err != nil {
+		fmt.Println(string(c.ColorFailure), "ODBC: Couldn't write `odbcinst.ini`!")
+		c.Logger.Debug("Couldn't write `odbcinst.ini`", "error", err)
+		return err
+	}
+
+	fmt.Println(string(c.ColorSuccess), "ODBC: Profile", c.ProfileName, "written to:", odbcConfigFile)
 
 	return nil
 }
@@ -152,7 +167,7 @@ func WriteDBTConfig(c config.Configuration, t *config.Credentials) error {
 		return err
 	}
 
-	fmt.Println(string(c.ColorSuccess), "DBT: Configuration written to:", dbtConfigFile)
+	fmt.Println(string(c.ColorSuccess), "DBT: Profile", c.ProfileName, "written to:", dbtConfigFile)
 
 	return nil
 }
