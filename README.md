@@ -50,6 +50,9 @@ mv ~/Downloads/gimme-snowflake-creds /usr/local/bin/
 ```yaml
 default: prod # Applies if no profile argument is passed
 
+driver-name: <driver_alias_name>
+driver-path: <path_to_odbc_driver>
+
 dev: 
   account: <snowflake_account_id>
   database: <snowflake_database_name>
@@ -58,7 +61,6 @@ dev:
   username: <okta_username>
   role: <snowflake_role>
   odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
-  odbc-driver: <path_to_odbc_driver> # Must be absolute path
   oauth: false
   
 prod:
@@ -69,7 +71,6 @@ prod:
   username: <okta_username>
   role: <snowflake_role>
   odbc-path: <path_to_odbc_ini_dir>  # Must be absolute path
-  odbc-driver: <path_to_odbc_driver> # Must be absolute path
   okta-org: <okta_org_url>
   client-id: <okta_app_client_id>
   issuer-url: <okta_app_issuer_url>
