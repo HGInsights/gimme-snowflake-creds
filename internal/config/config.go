@@ -13,6 +13,12 @@ import (
 var (
 	validate *validator.Validate
 
+	GlobalParams = []string{
+		"default",
+		"driver-name",
+		"driver-path",
+	}
+
 	oauthParams = []string{
 		"okta-org",
 		"client-id",
@@ -62,6 +68,7 @@ func LoadDefaults(c *Configuration) error {
 	c.ColorSuccess = colorGreen
 	c.ColorFailure = colorRed
 
+	// Determine if we're running in Docker
 	if utils.InDocker() {
 		c.Logger.Debug("Running in Docker!")
 		c.Profile.ODBCPath = "/root/Library/ODBC"
@@ -85,7 +92,7 @@ func ValidateConfiguration(c *Configuration) error {
 	err := validate.Struct(c)
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
-			if !c.Profile.OAuth && contains(oauthParams, err.Field()) {
+			if !c.Profile.OAuth && utils.Contains(oauthParams, err.Field()) {
 				return nil
 			} else {
 				fmt.Println(string(c.ColorFailure), "Parameter", err.Field(), "is required")
@@ -96,14 +103,4 @@ func ValidateConfiguration(c *Configuration) error {
 	}
 
 	return nil
-}
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
 }
