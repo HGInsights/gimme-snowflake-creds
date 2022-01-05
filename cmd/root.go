@@ -9,7 +9,9 @@ import (
 	"github.com/HGInsights/gimme-snowflake-creds/internal/config"
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/generator"
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/okta"
+	"github.com/HGInsights/gimme-snowflake-creds/pkg/utils"
 	"github.com/hashicorp/go-hclog"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -124,16 +126,35 @@ func initConfig(cmd *cobra.Command) error {
 		c.Logger.Debug(v.ConfigFileUsed())
 	}
 
-	// Set profile to default profile if no profile argument is passed
-	if c.ProfileName == "" {
-		c.ProfileName = c.DefaultProfile
-	}
-
 	// Unmarshal configuration into configuration struct
 	err = v.Unmarshal(&c)
 	if err != nil {
 		c.Logger.Error("error", err)
 		os.Exit(0)
+	}
+
+	// Provide list of profiles if no profile argument is passed
+	if c.ProfileName == "" {
+		profiles := []string{}
+
+		for key := range v.AllSettings() {
+			if !utils.Contains(config.GlobalParams, key) {
+				profiles = append(profiles, key)
+			}
+		}
+
+		prompt := promptui.Select{
+			Label: "Select a profile",
+			Items: profiles,
+		}
+
+		_, profile, err := prompt.Run()
+		if err != nil {
+			c.Logger.Debug("Prompt failed", "error", err)
+			os.Exit(0)
+		}
+
+		c.ProfileName = profile
 	}
 
 	// Unmarshal profile into profile struct
@@ -146,6 +167,8 @@ func initConfig(cmd *cobra.Command) error {
 	// Load default parameters
 	c.HomeDir = home
 	config.LoadDefaults(&c)
+
+	// Validate configuration
 	err = config.ValidateConfiguration(&c)
 	if err != nil {
 		c.Logger.Debug("error", err)
