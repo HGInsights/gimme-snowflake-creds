@@ -61,17 +61,11 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_TOKEN }}
 
-    - name: Build
-      shell: bash
-      run: |
-        docker build \
-          -t hgdata1/gimme-snowflake-creds:latest \
-          -t hgdata1/gimme-snowflake-creds:${{ steps.vars.outputs.tag}} \
-          --cache-from hgdata1/gimme-snowflake-creds:latest \
-          .
-
-    - name: Push
-      shell: bash
-      run: |
-        docker push hgdata1/gimme-snowflake-creds:latest && \
-        docker push hgdata1/gimme-snowflake-creds:${{ steps.vars.outputs.tag}}
+    - name: Build and push images
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        platforms: linux/amd64,linux/arm64
+        cache-from: hgdata1/gimme-snowflake-creds:latest
+        tags: hgdata1/gimme-snowflake-creds:latest,hgdata1/gimme-snowflake-creds:${{ steps.vars.outputs.tag}}
