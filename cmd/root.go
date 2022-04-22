@@ -84,7 +84,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Profile.Warehouse, "warehouse", "w", "", "Snowflake warehouse")
 	rootCmd.Flags().StringVarP(&c.Profile.Schema, "schema", "x", "PUBLIC", "Snowflake schema")
 	rootCmd.Flags().BoolVarP(&c.Profile.OAuth, "oauth", "", true, "enable/disable credential retrieval")
-	rootCmd.Flags().BoolVarP(&c.Profile.Generic, "generic", "", false, "enable/disable generic credential setup")
+	rootCmd.Flags().BoolVarP(&c.Profile.Generic, "generic", "", true, "enable/disable generic credential setup")
 	rootCmd.Flags().StringVarP(&c.Profile.OktaOrg, "okta-org", "o", "", "like: https://funtimes.oktapreview.com")
 	rootCmd.Flags().StringVarP(&c.Profile.ODBCPath, "odbc-path", "n", "/etc", "Path containing odbc.ini")
 	rootCmd.Flags().StringVarP(&c.Profile.ClientID, "client-id", "c", "", "OIDC Client ID of Okta application")
