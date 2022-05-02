@@ -12,6 +12,7 @@ import (
 func WriteGenericCredentials(c config.Configuration, t *config.Credentials) error {
 	var genericConfigPath = c.HomeDir + "/.gsc/" + c.ProfileName
 	var genericConfigFile = genericConfigPath + "/credentials"
+	var genericAuthUri = "authenticator=oauth&token=" + t.AccessToken
 
 	// Ensure `~/.gsc` directory exists
 	if _, err := os.Stat(genericConfigPath); os.IsNotExist(err) {
@@ -28,6 +29,7 @@ func WriteGenericCredentials(c config.Configuration, t *config.Credentials) erro
 
 	generic.Section("").Key("SNOWFLAKE_USER").SetValue(c.Profile.Username)
 	generic.Section("").Key("SNOWFLAKE_OAUTH_ACCESS_TOKEN").SetValue(t.AccessToken)
+	generic.Section("").Key("SNOWFLAKE_AUTH_URI").SetValue(genericAuthUri)
 
 	err = generic.SaveTo(genericConfigFile)
 	if err != nil {
