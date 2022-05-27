@@ -16,6 +16,7 @@ import (
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/verifier"
 	"github.com/google/uuid"
 	"github.com/manifoldco/promptui"
+	"github.com/zalando/go-keyring"
 )
 
 type authnResponse struct {
@@ -60,8 +61,8 @@ func Auth(c config.Configuration) (*config.Credentials, error) {
 	p := new(config.Credentials)
 
 	if c.Profile.OAuth {
-		// Prompt for Okta password
-		c, err := passwordPrompt(c)
+		// Retrieve password for configured user
+		c, err := retrievePassword(c)
 		if err != nil {
 			c.Logger.Debug("Unable to return password prompt input", "error", err)
 			os.Exit(0)
@@ -410,29 +411,77 @@ func factorPush(c config.Configuration, authn *authnResponse, factor *factor) er
 	return nil
 }
 
-func passwordPrompt(c config.Configuration) (config.Configuration, error) {
-	label := "Okta password for " + c.Profile.Username
-
-	validate := func(input string) error {
-		if len(input) == 0 {
-			return errors.New("password must not be empty")
+func retrievePassword(c config.Configuration) (config.Configuration, error) {
+	store := func(password string) error {
+		err := keyring.Set("gimme-snowflake-creds", c.Profile.Username, password)
+		if err != nil {
+			return err
 		}
+
+		fmt.Println(string(c.ColorSuccess), "Password saved to keyring")
+
 		return nil
 	}
 
-	prompt := promptui.Prompt{
-		Label:    label,
-		Validate: validate,
-		Mask:     '*',
+	prompt := func() (string, error) {
+		passwordLabel := "Okta password for " + c.Profile.Username
+		keyringLabel := "Save this password in the keyring?"
+
+		validate := func(input string) error {
+			if len(input) == 0 {
+				return errors.New("password must not be empty")
+			}
+
+			return nil
+		}
+
+		passwordPrompt := promptui.Prompt{
+			Label:    passwordLabel,
+			Validate: validate,
+			Mask:     '*',
+		}
+
+		keyringPrompt := promptui.Prompt{
+			Label:     keyringLabel,
+			IsConfirm: true,
+		}
+
+		password, err := passwordPrompt.Run()
+		if err != nil {
+			return "", err
+		}
+
+		keyring, err := keyringPrompt.Run()
+		if err != nil {
+			return "", err
+		}
+
+		if keyring == "y" {
+			store(password)
+		}
+
+		return password, nil
 	}
 
-	result, err := prompt.Run()
+	password, err := keyring.Get("gimme-snowflake-creds", c.Profile.Username)
 	if err != nil {
-		c.Logger.Debug("Prompt failed", "error", err)
-		os.Exit(0)
+		c.Logger.Debug("Password not present in keyring")
 	}
 
-	c.Profile.Password = result
+	if password == "" {
+		password, err := prompt()
+		if err != nil {
+			c.Logger.Debug("Prompt failed", "error", err)
+			os.Exit(0)
+		}
+
+		c.Profile.Password = password
+
+		return c, nil
+	}
+
+	c.Logger.Debug("Password present in keyring")
+	c.Profile.Password = password
 
 	return c, nil
 }
