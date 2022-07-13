@@ -148,8 +148,13 @@ func Auth(c config.Configuration) (*config.Credentials, error) {
 			p.AccessToken = token.AccessToken
 
 			return p, nil
+		} else if authn.Status == "MFA_ENROLL" {
+			fmt.Println(string(c.ColorFailure), "Specified Okta organization requires MFA enrollment")
+			fmt.Println(string(c.ColorFailure), "Configure your MFA device in Okta and try again")
+			os.Exit(0)
 		} else {
 			c.Logger.Debug("Something went very wrong...")
+			c.Logger.Debug("Status:", "status", authn.Status)
 			os.Exit(0)
 		}
 	}
