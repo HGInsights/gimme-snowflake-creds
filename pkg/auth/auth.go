@@ -1,4 +1,4 @@
-package okta
+package auth
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/HGInsights/gimme-snowflake-creds/internal/config"
+	"github.com/HGInsights/gimme-snowflake-creds/pkg/utils"
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/verifier"
 	"github.com/google/uuid"
 	"github.com/manifoldco/promptui"
@@ -417,6 +418,17 @@ func factorPush(c config.Configuration, authn *authnResponse, factor *factor) er
 }
 
 func retrievePassword(c config.Configuration) (config.Configuration, error) {
+	forget := func(username string) error {
+		err := keyring.Delete("gimme-snowflake-creds", username)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(c.ColorSuccess), "Password deleted from keyring")
+
+		return nil
+	}
+
 	store := func(password string) error {
 		err := keyring.Set("gimme-snowflake-creds", c.Profile.Username, password)
 		if err != nil {
@@ -430,9 +442,9 @@ func retrievePassword(c config.Configuration) (config.Configuration, error) {
 
 	prompt := func() (string, error) {
 		passwordLabel := "Okta password for " + c.Profile.Username
-		keyringLabel := "Save this password in the keyring?"
+		keyringLabel := "Save this password in the keyring"
 
-		validate := func(input string) error {
+		validatePassword := func(input string) error {
 			if len(input) == 0 {
 				return errors.New("password must not be empty")
 			}
@@ -442,14 +454,24 @@ func retrievePassword(c config.Configuration) (config.Configuration, error) {
 
 		passwordPrompt := promptui.Prompt{
 			Label:    passwordLabel,
-			Validate: validate,
+			Validate: validatePassword,
 			Mask:     '*',
 		}
 
 		keyringPrompt := promptui.Prompt{
 			Label:     keyringLabel,
 			IsConfirm: true,
+			Default:   "n",
 		}
+		validateStore := func(input string) error {
+			options := []string{"Y", "y", "N", "n"}
+			if len(input) == 1 && utils.Contains(options, input) || keyringPrompt.Default != "" && len(input) == 0 {
+				return nil
+			}
+
+			return errors.New("invalid input, must be Y/y or N/n")
+		}
+		keyringPrompt.Validate = validateStore
 
 		password, err := passwordPrompt.Run()
 		if err != nil {
@@ -457,15 +479,23 @@ func retrievePassword(c config.Configuration) (config.Configuration, error) {
 		}
 
 		keyring, err := keyringPrompt.Run()
-		if err != nil {
+		confirmed := !errors.Is(err, promptui.ErrAbort)
+		if err != nil && confirmed {
 			return "", err
 		}
 
-		if keyring == "y" {
+		if keyring == "y" || keyring == "Y" {
 			store(password)
 		}
 
 		return password, nil
+	}
+
+	if c.Forget {
+		err := forget(c.Profile.Username)
+		if err != nil {
+			c.Logger.Debug("Forget failed", "error", err)
+		}
 	}
 
 	password, err := keyring.Get("gimme-snowflake-creds", c.Profile.Username)

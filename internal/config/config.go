@@ -36,6 +36,7 @@ type Configuration struct {
 	ODBCDriverPath string `mapstructure:"driver-path" validate:"required"`
 	ProfileName    string
 	Profile        Profile
+	Forget         bool
 	HomeDir        string
 	Logger         hclog.Logger
 	ColorSuccess   string

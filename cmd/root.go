@@ -7,8 +7,8 @@ import (
 	"syscall"
 
 	"github.com/HGInsights/gimme-snowflake-creds/internal/config"
+	okta "github.com/HGInsights/gimme-snowflake-creds/pkg/auth"
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/generator"
-	"github.com/HGInsights/gimme-snowflake-creds/pkg/okta"
 	"github.com/HGInsights/gimme-snowflake-creds/pkg/utils"
 	"github.com/hashicorp/go-hclog"
 	"github.com/manifoldco/promptui"
@@ -77,6 +77,7 @@ func Execute() {
 func init() {
 	// Set flags
 	rootCmd.Flags().StringVarP(&c.ProfileName, "profile", "p", "", "profile selection")
+	rootCmd.Flags().BoolVarP(&c.Forget, "forget", "f", false, "forget saved credentials")
 	rootCmd.Flags().StringVarP(&c.Profile.Account, "account", "a", "", "Snowflake account, like: xy12345.us-east-1")
 	rootCmd.Flags().StringVarP(&c.ODBCDriverName, "driver-name", "z", "", "ODBC driver name")
 	rootCmd.Flags().StringVarP(&c.ODBCDriverPath, "driver-path", "v", "", "ODBC driver path (local)")
