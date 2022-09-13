@@ -28,6 +28,7 @@ func WriteGenericCredentials(c config.Configuration, t *config.Credentials) erro
 	}
 
 	generic.Section("").Key("SNOWFLAKE_USER").SetValue(c.Profile.Username)
+	generic.Section("").Key("SNOWFLAKE_UID").SetValue(c.Profile.Username)
 	generic.Section("").Key("SNOWFLAKE_OAUTH_ACCESS_TOKEN").SetValue(t.AccessToken)
 	generic.Section("").Key("SNOWFLAKE_AUTH_URI").SetValue(genericAuthUri)
 
