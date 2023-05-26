@@ -113,13 +113,18 @@ func WriteDBTConfig(c config.Configuration, t *config.Credentials) error {
 
 	var dbt = viper.New()
 	dbt.SetConfigFile(dbtConfigFile)
-	dbt.Set("default.target", c.DefaultProfile)
 
 	// Ensure DBT configuration directory exists
 	if _, err := os.Stat(dbtConfigPath); os.IsNotExist(err) {
 		c.Logger.Debug("Couldn't find existing DBT configuration directory, creating...", "error", err)
 		os.Mkdir(dbtConfigPath, os.ModePerm)
 	}
+
+	if c.DefaultProfile != "" {
+		dbt.Set(c.Profile.DbtProfile+".target", c.DefaultProfile)
+	}
+
+	output := c.Profile.DbtProfile + ".outputs"
 
 	if c.Profile.OAuth {
 		profile := map[string]interface{}{
@@ -133,12 +138,12 @@ func WriteDBTConfig(c config.Configuration, t *config.Credentials) error {
 				"database":                  c.Profile.Database,
 				"warehouse":                 c.Profile.Warehouse,
 				"schema":                    c.Profile.Schema,
-				"threads":                   10,
-				"client_session_keep_alive": false,
+				"threads":                   c.Profile.ThreadCount,
+				"client_session_keep_alive": c.Profile.KeepAlive,
 			},
 		}
 
-		dbt.Set("default.outputs", profile)
+		dbt.Set(output, profile)
 	} else {
 		profile := map[string]interface{}{
 			string(c.ProfileName): map[string]interface{}{
@@ -150,12 +155,12 @@ func WriteDBTConfig(c config.Configuration, t *config.Credentials) error {
 				"database":                  c.Profile.Database,
 				"warehouse":                 c.Profile.Warehouse,
 				"schema":                    c.Profile.Schema,
-				"threads":                   10,
-				"client_session_keep_alive": false,
+				"threads":                   c.Profile.ThreadCount,
+				"client_session_keep_alive": c.Profile.KeepAlive,
 			},
 		}
 
-		dbt.Set("default.outputs", profile)
+		dbt.Set(output, profile)
 	}
 
 	err := dbt.ReadInConfig()
