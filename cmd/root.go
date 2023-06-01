@@ -84,8 +84,11 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Profile.Database, "database", "d", "", "Snowflake database")
 	rootCmd.Flags().StringVarP(&c.Profile.Warehouse, "warehouse", "w", "", "Snowflake warehouse")
 	rootCmd.Flags().StringVarP(&c.Profile.Schema, "schema", "x", "PUBLIC", "Snowflake schema")
+	rootCmd.Flags().StringVar(&c.Profile.DbtProfile, "dbt-profile", "default", "What dbt profile to write to")
+	rootCmd.Flags().Uint64VarP(&c.Profile.ThreadCount, "threads", "t", 10, "The number of concurrent models dbt should build.")
 	rootCmd.Flags().BoolVarP(&c.Profile.OAuth, "oauth", "", true, "enable/disable credential retrieval")
 	rootCmd.Flags().BoolVarP(&c.Profile.Generic, "generic", "", true, "enable/disable generic credential setup")
+	rootCmd.Flags().BoolVar(&c.Profile.KeepAlive, "keep-alive", true, "the snowflake client will keep connections for longer than the default 4 hours.")
 	rootCmd.Flags().StringVarP(&c.Profile.OktaOrg, "okta-org", "o", "", "like: https://funtimes.oktapreview.com")
 	rootCmd.Flags().StringVarP(&c.Profile.ODBCPath, "odbc-path", "n", "/etc", "Path containing odbc.ini")
 	rootCmd.Flags().StringVarP(&c.Profile.ClientID, "client-id", "c", "", "OIDC Client ID of Okta application")
@@ -163,6 +166,12 @@ func initConfig(cmd *cobra.Command) error {
 	if err != nil {
 		c.Logger.Error("error", err)
 		os.Exit(0)
+	}
+
+	// Try to determine what the default
+	c.DefaultProfile = v.GetString("default")
+	if c.DefaultProfile == "" {
+		c.DefaultProfile = v.GetString("default." + c.Profile.DbtProfile)
 	}
 
 	// Load default parameters

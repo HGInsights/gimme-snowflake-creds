@@ -31,7 +31,7 @@ var (
 )
 
 type Configuration struct {
-	DefaultProfile string `mapstructure:"default"`
+	DefaultProfile string
 	ODBCDriverName string `mapstructure:"driver-name" validate:"required"`
 	ODBCDriverPath string `mapstructure:"driver-path" validate:"required"`
 	ProfileName    string
@@ -50,6 +50,9 @@ type Profile struct {
 	Database    string `mapstructure:"database" validate:"required"`
 	Warehouse   string `mapstructure:"warehouse" validate:"required"`
 	Schema      string `mapstructure:"schema"`
+	DbtProfile  string `mapstructure:"dbt-profile"`
+	ThreadCount uint64 `mapstructure:"threads"`
+	KeepAlive   bool   `mapstructure:"client_session_keep_alive"`
 	OktaOrg     string `mapstructure:"okta-org" validate:"required,url"`
 	ODBCPath    string `mapstructure:"odbc-path" validate:"required"`
 	ClientID    string `mapstructure:"client-id" validate:"required"`
